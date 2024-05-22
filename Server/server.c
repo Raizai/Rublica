@@ -7,7 +7,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
-#include <netinet/ip.h> /* superset of previous */
+#include <netinet/ip.h> 
+#include "rubrica.c"
 #define PORT 8080
 #define MAX_N_CLIENT 5
 
