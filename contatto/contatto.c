@@ -30,15 +30,16 @@ void inviaRubrica(int clientSocket, Rubrica *rubrica) {
     }
 }
 
-// Contatto getRecord(Contatto records[],char +number) {
-//     int length = sizeof(records);
-//     int i = 0;
-//     while(i < length){
-//         if(strcmp(records[i].lastname,lastname) == 0){
-//             if(strcmp(records[i].lastname,firstname) == 0){
-//                 return records[i];
-//             }
-//         }
-//         i++;
-//     }
-// }
+// Nome e cognome per identificare il numero, maledetto chi ha persone omonime in entrambi i campi nella propria rubrica
+Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname) {
+    int length = sizeof(rubrica);
+    int i = 0;
+    while(i < length){
+        if(strcmp(rubrica->contatti[i].lastname,lastname) == 0){
+            if(strcmp(rubrica->contatti[i].firstname,firstname) == 0){
+                return rubrica->contatti[i];
+            }
+        }
+        i++;
+    }
+}
