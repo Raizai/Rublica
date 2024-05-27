@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
-#include <unistd.h>
-
 #include "contatto.h"
 
 Contatto setContatto(char* lastname, char* firstname, char* cell_number) {
@@ -16,7 +10,7 @@ Contatto setContatto(char* lastname, char* firstname, char* cell_number) {
 
 int lenght = 0;
 
-void addContatto(Rubrica *rubrica, Contatto *contatto) {
+void addContatto(Rubrica *rubrica, const Contatto *contatto) {
     if(rubrica->totContatti >= 100) {
         printf("La Rubrica è piena, non è possibile aggiungere altri contatti.\n");
         return;
@@ -25,6 +19,15 @@ void addContatto(Rubrica *rubrica, Contatto *contatto) {
     rubrica->contatti[rubrica->totContatti] = *contatto;
     rubrica->contatti[rubrica->totContatti];
     rubrica->totContatti++;
+}
+
+void inviaRubrica(int clientSocket, Rubrica *rubrica) {
+    int totContatti = rubrica->totContatti;
+    send(clientSocket, &totContatti, sizeof(totContatti), 0);
+    printf("TOTCONTATTO: %d\n",totContatti); 
+    for(int i = 0; i < totContatti; i++) {
+        send(clientSocket, &rubrica->contatti[i], sizeof(Rubrica), 0);
+    }
 }
 
 // Contatto getRecord(Contatto records[],char +number) {

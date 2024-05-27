@@ -1,3 +1,13 @@
+#ifndef CONTATTO_H
+#define CONTATTO_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+
 #define MAX_CONTATTO 100
 
 typedef struct {
@@ -13,4 +23,8 @@ typedef struct {
 
 Contatto setContatto(char* lastname, char* firstname, char* cell_number);
 
-void addContatto(Rubrica *rubrica, Contatto *contatto);
+void addContatto(Rubrica *rubrica, const Contatto *contatto);
+
+void inviaRubrica(int clientSocket, Rubrica *rubrica);
+
+#endif //CONTATTO_H
