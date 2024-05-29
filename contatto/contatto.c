@@ -42,4 +42,5 @@ Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname) {
         }
         i++;
     }
+    // pensare a cosa ritornare nel caso in cui non trova il contatto;
 }

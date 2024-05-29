@@ -27,6 +27,26 @@ void receiveContacts(int client_socket, Rubrica *rubrica) {
     }
 }
 
+void riceviRubrica(int clientSocket, Rubrica *rubrica) {
+    // Receive the total number of contacts
+    int totContatti;
+    if (recv(clientSocket, &totContatti, sizeof(totContatti), 0) <= 0) {
+        perror("Error receiving total contacts");
+        return;
+    }
+    rubrica->totContatti = totContatti;
+    printf("TOTCONTATTO: %d\n", totContatti);
+
+    // Receive each contact individually
+    for (int i = 0; i < totContatti; i++) {
+        if (recv(clientSocket, &rubrica->contatti[i], sizeof(Contatto), 0) <= 0) {
+            perror("Error receiving contact");
+            return;
+        }
+        printf("Received contact %d: %s, %s\n", i, rubrica->contatti[i].firstname, rubrica->contatti[i].cell_number);
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     int status, client_fd;
@@ -75,11 +95,10 @@ int main(int argc, char const *argv[])
             write(client_fd, "1", 1);
             printf("Messaggio inviato al Server\n");
 
-            receiveContacts(client_fd, &rubrica);
+            riceviRubrica(client_fd, &rubrica);
             printf("Ricevuto \n");
             
             printf("TOT: %d\n", rubrica.totContatti);
-            printf("qui: %s\n", rubrica.contatti[1].firstname);
             
             for(int i = 0; i < rubrica.totContatti; i++) {
                 printf("Contatto %d\n", i+1);

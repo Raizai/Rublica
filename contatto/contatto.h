@@ -27,4 +27,6 @@ void addContatto(Rubrica *rubrica, const Contatto *contatto);
 
 void inviaRubrica(int clientSocket, Rubrica *rubrica);
 
+Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname);
+
 #endif //CONTATTO_H

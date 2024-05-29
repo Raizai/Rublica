@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
                 if(strcmp(command, "1") == 0) {
                     printf("true\n");
                     inviaRubrica(client_sockets[socket_counter], &rubrica);
-                    printf("SIZE: %ld\n", sizeof(Rubrica));
                     printf("inviato\n");
                 }
             }
