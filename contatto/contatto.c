@@ -44,3 +44,10 @@ Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname) {
     }
     // pensare a cosa ritornare nel caso in cui non trova il contatto;
 }
+
+void printContatto(Contatto contatto) {
+    printf("Contatto:\n");
+    printf("Name: %s\n", contatto.firstname);
+    printf("Cognome: %s\n", contatto.lastname);
+    printf("Number: %s\n", contatto.cell_number);
+}

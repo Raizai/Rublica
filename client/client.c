@@ -47,6 +47,10 @@ void riceviRubrica(int clientSocket, Rubrica *rubrica) {
     }
 }
 
+void inviaNuovoContatto(int clientSocket, Contatto *contatto) {
+    send(clientSocket, contatto, sizeof(Contatto), 0);
+}
+
 int main(int argc, char const *argv[])
 {
     int status, client_fd;
@@ -89,6 +93,9 @@ int main(int argc, char const *argv[])
         puts("4 : Eliminare un contatto esistente (Autenticazione richiesta)");
         puts("9 : Uscire dal sistema");
         scanf("%d", &choice);
+
+        printf("Messaggio inviato al Server\n");
+
         switch (choice) {
         case 1:
             puts("Elenco della Rubrica: \n");
@@ -111,6 +118,18 @@ int main(int argc, char const *argv[])
 
             break;
         case 2:
+            Contatto nuovoContatto;
+            write(client_fd, "1", 1);
+            puts("Nome: ");
+            scanf("%s",nuovoContatto.firstname);
+            puts("Cognome: ");
+            scanf("%s",nuovoContatto.lastname);
+            puts("Cellulare: ");
+            scanf("%s",nuovoContatto.cell_number);
+            //write(client_fd, "2", 1);
+            inviaNuovoContatto(client_fd, &nuovoContatto);
+            printContatto(nuovoContatto);
+            puts("INVIATO CONTATTO");
             break;
         case 3:
             break;

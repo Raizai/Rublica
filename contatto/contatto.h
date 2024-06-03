@@ -29,4 +29,6 @@ void inviaRubrica(int clientSocket, Rubrica *rubrica);
 
 Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname);
 
+void printContatto(Contatto contatto);
+
 #endif //CONTATTO_H
