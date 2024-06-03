@@ -119,7 +119,7 @@ int main(int argc, char const *argv[])
             break;
         case 2:
             Contatto nuovoContatto;
-            write(client_fd, "1", 1);
+            write(client_fd, "2", 1);
             puts("Nome: ");
             scanf("%s",nuovoContatto.firstname);
             puts("Cognome: ");

@@ -21,6 +21,10 @@ void error(const char *msg)
     exit(1);
 }
 
+void riceviNuovoContatto(int clientSocket, Contatto *contatto) {
+    recv(clientSocket, contatto, sizeof(Contatto), 0);
+}
+
 int main(int argc, char *argv[]) {
     int sockfd;
     int client_sockets[MAX_N_CLIENT];
@@ -46,20 +50,22 @@ int main(int argc, char *argv[]) {
     }
 
     // DEFINISCO L'INDIRIZZO DA ASSEGNARE AL SOCKET
-     bzero((char *)&serv_addr, sizeof(serv_addr));
-     serv_addr.sin_family = AF_INET;
-     serv_addr.sin_addr.s_addr = INADDR_ANY;
-     serv_addr.sin_port = htons(PORT);
-     if (bind(sockfd, (struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) 
-              error("ERRORE: l'indirizzo non è stato assegnato correttamente\n");
-    
+    bzero((char *)&serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(PORT);
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        error("ERRORE: l'indirizzo non è stato assegnato correttamente\n");
+    }
+
+    if (listen(sockfd, MAX_N_CLIENT) < 0) {
+        perror("Errore in listen\n");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
     // MI METTO IN ASCOLTO
     while(1){
-        if (listen(sockfd,MAX_N_CLIENT) < 0) {
-            perror("Errore in listen\n");
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
+
         socket_lenght = sizeof(cli_addr);
         int socket_counter = 0;
         if(fork() == 0){
@@ -72,10 +78,21 @@ int main(int argc, char *argv[]) {
             while (read(client_sockets[socket_counter], command, sizeof(command)) > 0) {
                 printf("Letto \n");
                 printf("%s\n", command);
-                if(strcmp(command, "1") == 0) {
+                switch (atoi(command)) {
+                case 1:
                     printf("true\n");
                     inviaRubrica(client_sockets[socket_counter], &rubrica);
                     printf("inviato\n");
+                    break;
+                case 2:
+                    Contatto newContatto;
+                    riceviNuovoContatto(client_sockets[socket_counter], &newContatto);
+                    printContatto(newContatto);
+                    addContatto(&rubrica, &newContatto);
+                    printf("Contatto Aggiunto\n");
+                    break;
+                default:
+                    break;
                 }
             }
         }
