@@ -45,10 +45,7 @@ int main(int argc, char const *argv[])
         puts("Connessione in corso ...");
         sleep(3);
     }
-    int codice;
-    if(read(client_fd, &codice, sizeof(codice)) > 0){
-        printf("Codice ricevuto :%d\n",codice);
-    }
+
     int choice;
     do {
         puts("\nBenvenuto nella Rubrica Condivisa");
@@ -59,9 +56,10 @@ int main(int argc, char const *argv[])
         puts("4 : Eliminare un contatto esistente (Autenticazione richiesta)");
         puts("9 : Uscire dal sistema");
         scanf("%d", &choice);
-        printf("Messaggio inviato al Server\n");
         switch (choice) {
         case 1:
+            write(client_fd, &choice, sizeof(choice));
+            printf("Richiesta inviata al client : %d\n",choice);
             break;
         case 2:
             break;
