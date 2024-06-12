@@ -7,9 +7,10 @@ typedef struct {
     int totContatti;
 } Rubrica;
 
-int length(Rubrica rubrica[]);
-
 void addContatto(Rubrica *rubrica, Contatto *contatto);
 
-void stampaRubrica(Rubrica rubrica[]);
+Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname);
 
+void printRubrica(Rubrica *rubrica);
+
+void sendRubrica(int clientSocket, Rubrica *rubrica);

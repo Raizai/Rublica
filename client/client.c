@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#include "../contatto/contatto.h"
+#include "../rubrica/rubrica.h"
 
 #define PORT 8080
 

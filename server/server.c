@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h> 
 
-#include "../contatto/contatto.h"
+#include "../rubrica/rubrica.h"
 
 #define PORT 8080
 #define MAX_N_CLIENT 1

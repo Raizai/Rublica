@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
+#include "../rubrica/rubrica.h"
 #define PORT 8080
 
 void error(const char *msg)
@@ -17,12 +17,31 @@ void error(const char *msg)
     exit(0);
 }
 
+void receiveRubrica(int clientSocket, Rubrica *rubrica) {
+    int length;
+    if (recv(clientSocket, &length, sizeof(length), 0) <= 0) {
+        perror("ERRORE : il totale dei contatti non è stato ricevuto correttamente.");
+        return;
+    }
+    rubrica->totContatti = length;
+    printf("NUmero di contatti recuperati: %d\n", length);
+
+    for (int i = 0; i < length; i++) {
+        if (recv(clientSocket, &rubrica->contatti[i], sizeof(Contatto), 0) <= 0) {
+            perror("ERRORE : Uno dei contatti non è stato ricevuto correttamente.");
+            return;
+        }
+    }
+    puts("La rubrica è stata ricevuta correttamente.");
+}
+
 int main(int argc, char const *argv[])
 {
     int status, client_fd;
     struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
     int num_contact;
+    Rubrica rubrica;
 
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("ERRORE: Creazione socket fallita");
@@ -59,7 +78,9 @@ int main(int argc, char const *argv[])
         switch (choice) {
         case 1:
             write(client_fd, &choice, sizeof(choice));
-            printf("Richiesta inviata al client : %d\n",choice);
+            printf("Richiesta inviata al server : %d\n",choice);
+            receiveRubrica(client_fd, &rubrica);
+            printRubrica(&rubrica);
             break;
         case 2:
             break;

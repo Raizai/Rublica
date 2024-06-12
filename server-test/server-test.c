@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h> 
 #include <arpa/inet.h>
+#include "../rubrica/rubrica.h"
 
 #define PORT 8080
 #define MAX_N_CLIENT 2
@@ -20,6 +21,15 @@ void debugWithMessageWithoutParameters(int mode, char * msg){
 }
 
 int main(int argc, char *argv[]) {
+    // INIZIALIZZO LA RUBRICA
+    Rubrica rubrica;
+    rubrica.totContatti = 0;
+    Contatto rossi = setContatto("Rossi", "Luigi", "3335670098");
+    Contatto sainz = setContatto("Sainz", "Luca", "3389234123");
+    Contatto estathe = setContatto("Estathe", "Leila", "3382987105");
+    addContatto(&rubrica, &rossi);
+    addContatto(&rubrica, &sainz);
+    addContatto(&rubrica, &estathe);
     // ISTANZIO VARIABILI
     int sockfd, client_connection;
     socklen_t length;
@@ -61,6 +71,7 @@ int main(int argc, char *argv[]) {
                     switch(command){
                         case 1:
                             printf("Eseguo operazione %d richiesta da %s:%d\n",command,inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
+                            sendRubrica(client_connection, &rubrica);
                             break;
                         case 9:
                             printf("In attesa di input da ... %s:%d\n",inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
