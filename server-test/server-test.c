@@ -74,6 +74,15 @@ int main(int argc, char *argv[]) {
                             send(client_connection, &rubrica, sizeof(Rubrica), 0);
                             memset(command, 0, sizeof(command));
                             break;
+                        case 2:
+                            Contatto newContatto;
+                            recv(client_connection, &newContatto, sizeof(Contatto), 0);
+                            printContatto(newContatto);
+                            addContatto(&rubrica, &newContatto);
+                            printf("Contatto Aggiunto\n");
+
+                            memset(command, 0, sizeof(command));
+                            break;
                         case 9:
                             printf("In attesa di input da ... %s:%d\n",inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
                             break;

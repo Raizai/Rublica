@@ -81,7 +81,19 @@ int main(int argc, char const *argv[])
             read(client_fd, &rubrica, sizeof( Rubrica));
             printRubrica(&rubrica);
             break;
-        case 2:
+        case 2: 
+            Contatto nuovoContatto;
+            write(client_fd, "2", 1);
+            puts("Nome: ");
+            scanf("%s",nuovoContatto.firstname);
+            puts("Cognome: ");
+            scanf("%s",nuovoContatto.lastname);
+            puts("Cellulare: ");
+            scanf("%s",nuovoContatto.cell_number);
+            //write(client_fd, "2", 1);
+            send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
+            printContatto(nuovoContatto);
+            puts("INVIATO CONTATTO");
             break;
         case 3:
             break;
