@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "rubrica.h"
 
 void addContatto(Rubrica *rubrica, Contatto *contatto) {
@@ -34,18 +35,7 @@ Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname) {
 }
 
 void printRubrica(Rubrica* rubrica){
-    int length = rubrica->totContatti;
-    for(int i = 0; i < length; i++) {
+    for(int i = 0; i < rubrica->totContatti; i++) {
         printContatto(rubrica->contatti[i]);
     }
-}
-
-void sendRubrica(int clientSocket, Rubrica *rubrica) {
-    int totContatti = rubrica->totContatti;
-    send(clientSocket, &totContatti, sizeof(totContatti), 0);
-    printf("Numero di contatti inviati: %d\n",totContatti); 
-    for(int i = 0; i < totContatti; i++) {
-        send(clientSocket, &rubrica->contatti[i], sizeof(Rubrica), 0);
-    }
-    puts("Invio dei contatti avvenuto con successo.");
 }

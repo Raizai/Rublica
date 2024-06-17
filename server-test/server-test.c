@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     socklen_t length;
     struct sockaddr_in serv_addr, cli_addr;
     char buffer[1024];
-    int command;
+    int command[10] = {0};
     pid_t clientPID;
     // APRO SOCKET TCP
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -62,23 +62,23 @@ int main(int argc, char *argv[]) {
     while(1){
         length = sizeof(cli_addr);
         int client_connection = accept(sockfd, (struct sockaddr *) &cli_addr, &length);
-        if(client_connection < 0) exit(1);
+        if(client_connection < 0) {
+            exit(1);
+        }
         printf("Connessione accettata dall'indirizzo: %s sulla porta :%d\n",inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
         if(clientPID = fork() == 0){
-            debugWithMessageWithoutParameters(0,"DEBUG : fork eseguito\n");
-            do{
-                if(read(client_connection, &command, sizeof(command)) > 0) {
-                    switch(command){
+                while(read(client_connection, &command, sizeof(command)) > 0) {
+                    switch(atoi(command)){
                         case 1:
                             printf("Eseguo operazione %d richiesta da %s:%d\n",command,inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
-                            sendRubrica(client_connection, &rubrica);
+                            send(client_connection, &rubrica, sizeof(Rubrica), 0);
+                            memset(command, 0, sizeof(command));
                             break;
                         case 9:
                             printf("In attesa di input da ... %s:%d\n",inet_ntoa(cli_addr.sin_addr),cli_addr.sin_port);
                             break;
                     }
                 }
-            }while(command != 9);
         }
     }
     return 0; 

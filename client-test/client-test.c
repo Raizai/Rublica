@@ -23,8 +23,6 @@ void receiveRubrica(int clientSocket, Rubrica *rubrica) {
         perror("ERRORE : il totale dei contatti non è stato ricevuto correttamente.");
         return;
     }
-    rubrica->totContatti = length;
-    printf("NUmero di contatti recuperati: %d\n", length);
 
     for (int i = 0; i < length; i++) {
         if (recv(clientSocket, &rubrica->contatti[i], sizeof(Contatto), 0) <= 0) {
@@ -75,11 +73,12 @@ int main(int argc, char const *argv[])
         puts("4 : Eliminare un contatto esistente (Autenticazione richiesta)");
         puts("9 : Uscire dal sistema");
         scanf("%d", &choice);
+        printf("CHOICCEEE: %d", choice);
         switch (choice) {
         case 1:
-            write(client_fd, &choice, sizeof(choice));
+            write(client_fd, "1", 1);
             printf("Richiesta inviata al server : %d\n",choice);
-            receiveRubrica(client_fd, &rubrica);
+            read(client_fd, &rubrica, sizeof( Rubrica));
             printRubrica(&rubrica);
             break;
         case 2:
