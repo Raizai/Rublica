@@ -35,7 +35,7 @@ void receiveRubrica(int clientSocket, Rubrica *rubrica) {
 
 int main(int argc, char const *argv[])
 {
-    int status, client_fd;
+    int status, client_fd, response;
     struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
     int num_contact;
@@ -84,18 +84,46 @@ int main(int argc, char const *argv[])
         case 2: 
             Contatto nuovoContatto;
             write(client_fd, "2", 1);
+            
             puts("Nome: ");
             scanf("%s",nuovoContatto.firstname);
             puts("Cognome: ");
             scanf("%s",nuovoContatto.lastname);
             puts("Cellulare: ");
             scanf("%s",nuovoContatto.cell_number);
-            //write(client_fd, "2", 1);
             send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
-            printContatto(nuovoContatto);
-            puts("INVIATO CONTATTO");
+
+            read(client_fd, &response, sizeof(int));
+            printf("Response: %d\n", response);
             break;
         case 3:
+            char newName[50], newLastName[50], newPhoneNumber[50];
+            Contatto contatto_modificato;
+
+            write(client_fd, "3", 1);
+
+            puts("Enter the Name:");
+            scanf("%s", newName);
+            send(client_fd, newName, strlen(newName), 0);
+
+
+            puts("Enter the Last Name:");
+            scanf("%s", newLastName);
+            send(client_fd, newLastName, strlen(newLastName), 0);
+
+            read(client_fd, &response, sizeof(int));
+
+             if (response == 1) {
+                printf("Inserisci il nuovo numero di telefono per il contatto: ");
+                scanf("%s", contatto_modificato.cell_number);
+
+                // Invia il nuovo numero al server
+                send(client_fd, contatto_modificato.cell_number, strlen(contatto_modificato.cell_number), 0);
+                printf("Numero modificato inviato al server.\n");
+            } else {
+                printf("Contatto non esiste nella Rubrica.\n");
+            }
+
             break;
         case 4:
             break;
