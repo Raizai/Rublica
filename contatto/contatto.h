@@ -7,9 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
-
-#define MAX_CONTATTO 100
-
 typedef struct {
     char lastname[50];
     char firstname[50];

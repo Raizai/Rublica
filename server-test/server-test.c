@@ -10,6 +10,7 @@
 #include <netinet/ip.h> 
 #include <arpa/inet.h>
 #include "../rubrica/rubrica.h"
+#include "../utenti/utenti.h"
 
 #define PORT 8080
 #define MAX_N_CLIENT 2
@@ -85,6 +86,10 @@ int main(int argc, char *argv[]) {
                             memset(command, 0, sizeof(command));
                             break;
                         case 2:
+                            Utente utente;
+                            recv(client_connection, &utente, sizeof(Utente), 0);
+                            
+
                             Contatto newContatto;
                             recv(client_connection, &newContatto, sizeof(Contatto), 0);
                             printContatto(newContatto);
