@@ -21,14 +21,13 @@ void debugWithMessageWithoutParameters(int mode, char * msg){
     }
 }
 
-Contatto* findContatto(Rubrica *rubrica, char nome[], char cognome[]) {
+int findContatto(Rubrica *rubrica, char nome[], char cognome[]) {
     for (int i = 0; i < rubrica->totContatti; i++) {
         if (strcmp(rubrica->contatti[i].firstname, nome) == 0 && strcmp(rubrica->contatti[i].lastname, cognome) == 0) {
-            puts("Trovato");
-            return &rubrica->contatti[i];
+            return i;  //se il contatto viene trovato viene ritornato il suo indice
         }
     }
-    return NULL; // Se il contatto non viene trovato
+    return -1; // Se il contatto non viene trovato
 }
 
 int main(int argc, char *argv[]) {
@@ -100,8 +99,9 @@ int main(int argc, char *argv[]) {
                             memset(command, 0, sizeof(command));
                             break;
                         case 3:
-                            char newName[50], newLastName[50];
+                            char newName[50], newLastName[50], newNumber[50];
                             Contatto *contatto_modificato;
+                            int indice;
                             valread = read(client_connection, newName, 50);
                             newName[valread] = '\0';
                             printf("VALREAD: %d\n", valread);
@@ -111,23 +111,28 @@ int main(int argc, char *argv[]) {
                             printf("VALREAD: %d\n", valread);
                             printf("newLastName: %s\n", newLastName);
 
-                            contatto_modificato = findContatto(&rubrica, newName, newLastName);
+                            indice = findContatto(&rubrica, newName, newLastName);
+                            //printf("QUINDI: %s",contatto_modificato );
 
-                            printf("Nome: %s - Cognome: %s\n", contatto_modificato->firstname, contatto_modificato->lastname);
+                            //printf("Nome: %s - Cognome: %s\n", contatto_modificato->firstname, contatto_modificato->lastname);
 
-                            if (contatto_modificato != NULL) {
+                            if (indice != -1) {
                                 // Invia al client un messaggio di conferma
                                 int conferma = 1;
                                 send(client_connection, &conferma, sizeof(int), 0);
 
+                                memset(newNumber, 0, sizeof(newNumber));
                                 // Ricevi il nuovo numero di telefono dal client
-                                valread = read(client_connection, contatto_modificato->cell_number, 20);
-                                contatto_modificato->cell_number[valread] = '\0'; // Aggiunge terminatore di stringa
+                                read(client_connection, newNumber, sizeof(newNumber));
+                                newNumber[strcspn(newNumber, "\n")] = 0; // Aggiunge terminatore di stringa
+
+                                strcpy(rubrica.contatti[indice].cell_number, newNumber);
+                                printf("Numero di telefono del contatto modificato.\n");
 
                                 printf("Contatto modificato:\n");
-                                printf("Nome: %s\n", contatto_modificato->lastname);
-                                printf("Cognome: %s\n", contatto_modificato->lastname);
-                                printf("Numero di telefono: %s\n", contatto_modificato->cell_number);
+                                printf("Nome: %s\n",rubrica.contatti[indice].firstname);
+                                printf("Cognome: %s\n", rubrica.contatti[indice].lastname);
+                                printf("Numero di telefono: %s\n", rubrica.contatti[indice].cell_number);
                                 printf("\n");
                             } else{
                                 // Se il contatto non viene trovato, invia un messaggio di errore al client

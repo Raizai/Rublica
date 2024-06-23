@@ -141,7 +141,8 @@ int main(int argc, char const *argv[])
                         printf("Numero non valido. Inserisci di nuovo il numero\n");
                     }
                 } while (!isNumero(contatto_modificato.cell_number));
-
+                
+                printf("NUMERO NUOVO: %s\n", contatto_modificato.cell_number);
                 // Invia il nuovo numero al server
                 send(client_fd, contatto_modificato.cell_number, strlen(contatto_modificato.cell_number), 0);
                 printf("Numero modificato inviato al server.\n");
