@@ -87,16 +87,16 @@ int main(int argc, char *argv[]) {
                             break;
                         case 2:
                             Utente utente;
-                            recv(client_connection, &utente, sizeof(Utente), 0);
-                            
+                            //recv(client_connection, &utente, sizeof(Utente), 0);
+
+                            int totContatti = rubrica.totContatti;
+                            send(client_connection, &totContatti, sizeof(int), 0);
 
                             Contatto newContatto;
                             recv(client_connection, &newContatto, sizeof(Contatto), 0);
                             printContatto(newContatto);
                             addContatto(&rubrica, &newContatto);
 
-                            int conferma = 1; 
-                            send( client_connection, &conferma, sizeof(int),0);
                             memset(command, 0, sizeof(command));
                             break;
                         case 3:
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
                             } else{
                                 // Se il contatto non viene trovato, invia un messaggio di errore al client
                                 char errore[] = "Contatto non trovato";
-                                send(client_connection, errore, strlen(errore), 0);
+                                send(client_connection, errore, sizeof(char), 0);
                             }
                             break;
                         case 9:

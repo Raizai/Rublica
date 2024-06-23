@@ -8,4 +8,4 @@ typedef struct {
 } Utenti;
 
 Utenti inizializza();
-int autorizza(Utente *ute);
+int autorizza(Utenti* lista, Utente *utente);

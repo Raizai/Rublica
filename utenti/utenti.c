@@ -14,15 +14,16 @@ Utenti inizializza() {
     utenti.totUtenti++;
 }
 
-int autorizza(Utenti* lista, Utente* ute){
+int autorizza(Utenti* lista, Utente* utente){
     // 0 : hit - 1 : miss
     int i;
     for(i = 0;i<lista->totUtenti;i++){
-        if(strcmp(lista->utenti[i].username,ute->username) == 0){
-            if(strcmp(lista->utenti[i].password,ute->password) == 0){
+        if(strcmp(lista->utenti[i].username, utente->username) == 0){
+            if(strcmp(lista->utenti[i].password, utente->password) == 0){
                 return 0;
             }
         }
     }
     return 1;
 }
+

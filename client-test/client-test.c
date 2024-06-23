@@ -11,12 +11,6 @@
 #include "../rubrica/rubrica.h"
 #define PORT 8080
 
-void error(const char *msg)
-{
-    perror(msg);
-    exit(0);
-}
-
 void receiveRubrica(int clientSocket, Rubrica *rubrica) {
     int length;
     if (recv(clientSocket, &length, sizeof(length), 0) <= 0) {
@@ -31,6 +25,26 @@ void receiveRubrica(int clientSocket, Rubrica *rubrica) {
         }
     }
     puts("La rubrica è stata ricevuta correttamente.");
+}
+
+int isNumero(const char *str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] < '0' || str[i] > '9') {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void checkNumero(char *number) {
+    do {
+        puts("Cellulare: ");
+        scanf("%s", number);
+
+        if (!isNumero(number)) {
+            printf("Numero non valido. Inserisci di nuovo il numero\n");
+        }
+    } while (!isNumero(number));
 }
 
 int main(int argc, char const *argv[])
@@ -73,7 +87,7 @@ int main(int argc, char const *argv[])
         puts("4 : Eliminare un contatto esistente (Autenticazione richiesta)");
         puts("9 : Uscire dal sistema");
         scanf("%d", &choice);
-        printf("CHOICCEEE: %d", choice);
+
         switch (choice) {
         case 1:
             write(client_fd, "1", 1);
@@ -84,17 +98,22 @@ int main(int argc, char const *argv[])
         case 2: 
             Contatto nuovoContatto;
             write(client_fd, "2", 1);
-            
-            puts("Nome: ");
-            scanf("%s",nuovoContatto.firstname);
-            puts("Cognome: ");
-            scanf("%s",nuovoContatto.lastname);
-            puts("Cellulare: ");
-            scanf("%s",nuovoContatto.cell_number);
-            send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
 
-            read(client_fd, &response, sizeof(int));
-            printf("Response: %d\n", response);
+            int totContatti;
+            read(client_fd, &totContatti, sizeof(int));
+
+            if (totContatti < 100) {
+                puts("Nome: ");
+                scanf("%s", nuovoContatto.firstname);
+                puts("Cognome: ");
+                scanf("%s", nuovoContatto.lastname);
+
+                checkNumero(nuovoContatto.cell_number);
+                send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
+            } else {
+                printf("Rubrica piena, impossibile aggiungere nuovi contatti.\n");
+            }
+
             break;
         case 3:
             char newName[50], newLastName[50], newPhoneNumber[50];
@@ -106,16 +125,22 @@ int main(int argc, char const *argv[])
             scanf("%s", newName);
             send(client_fd, newName, strlen(newName), 0);
 
-
             puts("Enter the Last Name:");
             scanf("%s", newLastName);
             send(client_fd, newLastName, strlen(newLastName), 0);
 
             read(client_fd, &response, sizeof(int));
 
-             if (response == 1) {
+            if (response == 1) {
+
+                do {
                 printf("Inserisci il nuovo numero di telefono per il contatto: ");
                 scanf("%s", contatto_modificato.cell_number);
+
+                    if (!isNumero(contatto_modificato.cell_number)) {
+                        printf("Numero non valido. Inserisci di nuovo il numero\n");
+                    }
+                } while (!isNumero(contatto_modificato.cell_number));
 
                 // Invia il nuovo numero al server
                 send(client_fd, contatto_modificato.cell_number, strlen(contatto_modificato.cell_number), 0);
