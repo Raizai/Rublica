@@ -12,21 +12,13 @@ void addContatto(Rubrica *rubrica, Contatto *contatto) {
     rubrica->totContatti++;
 }
 
-// Nome e cognome per identificare il numero, maledetto chi ha persone omonime in entrambi i campi nella propria rubrica
-Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname) {
-    int length = sizeof(rubrica);
-    int i = 0;
-    while(i < length){
-        if(strcmp(rubrica->contatti[i].lastname,lastname) == 0){
-            if(strcmp(rubrica->contatti[i].firstname,firstname) == 0){
-                return rubrica->contatti[i];
-            }
+int getContatto(Rubrica *rubrica, char nome[], char cognome[]) {
+    for (int i = 0; i < rubrica->totContatti; i++) {
+        if (strcmp(rubrica->contatti[i].firstname, nome) == 0 && strcmp(rubrica->contatti[i].lastname, cognome) == 0) {
+            return i;  //se il contatto viene trovato viene ritornato il suo indice
         }
-        i++;
     }
-    // pensare a cosa ritornare nel caso in cui non trova il contatto
-    // ritorno contatto nullo, ci penserà il client a gestirlo
-    return setContatto("","","");
+    return -1; // Se il contatto non viene trovato
 }
 
 void printRubrica(Rubrica* rubrica){

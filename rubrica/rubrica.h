@@ -9,7 +9,7 @@ typedef struct {
 
 void addContatto(Rubrica *rubrica, Contatto *contatto);
 
-Contatto getContatto(Rubrica *rubrica, char* lastname, char* firstname);
+int getContatto(Rubrica *rubrica, char* lastname, char* firstname);
 
 void printRubrica(Rubrica *rubrica);
 

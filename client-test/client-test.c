@@ -77,9 +77,10 @@ int main(int argc, char const *argv[])
         sleep(3);
     }
 
+    puts("\nBenvenuto nella Rubrica Condivisa");
+
     int choice;
     do {
-        puts("\nBenvenuto nella Rubrica Condivisa");
         puts("Scegliere l'opzione desiderata:");
         puts("1 : Visualizzare i contatti della rubrica");
         puts("2 : Aggiungere un nuovo contatto (Autenticazione richiesta)");
@@ -152,6 +153,23 @@ int main(int argc, char const *argv[])
 
             break;
         case 4:
+            char nome_elim[50], cognome_elim[50];
+
+            write(client_fd, "4", 1); 
+            send(client_fd, buffer, strlen(buffer), 0);
+
+            printf("Inserisci il nome del contatto da eliminare: ");
+            scanf("%s", nome_elim);
+            send(client_fd, nome_elim, strlen(nome_elim), 0);
+
+            printf("Inserisci il cognome del contatto da eliminare: ");
+            scanf("%s", cognome_elim);
+            send(client_fd, cognome_elim, strlen(cognome_elim), 0);
+
+            char response[1024] = {0};
+            read(client_fd, response, 1024);
+            printf("%s\n", response);
+            
             break;
         case 9:
             break;
