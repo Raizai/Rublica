@@ -7,5 +7,6 @@ typedef struct {
     int totUtenti;
 } Utenti;
 
-Utenti inizializza();
+void inizializza(Utenti* utenti);
 int autorizza(Utenti* lista, Utente *utente);
+void printUtenti(Utenti* utenti);

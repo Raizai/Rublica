@@ -43,6 +43,11 @@ int main(int argc, char *argv[])
     addContatto(&rubrica, &rossi);
     addContatto(&rubrica, &sainz);
     addContatto(&rubrica, &estathe);
+    // INIZIALIZZO UTENTI
+    Utenti utenti;
+    utenti.totUtenti = 0;
+    inizializza(&utenti);
+    //printUtenti(&utenti);
     // ISTANZIO VARIABILI
     int sockfd, client_connection, valread;
     socklen_t length;
@@ -98,17 +103,31 @@ int main(int argc, char *argv[])
                     memset(command, 0, sizeof(command));
                     break;
                 case 2:
+                    puts("Scelta effettuata dall'utente : 2");
+                    puts("In attesa di autenticazione ...");
                     Utente utente;
-                    // recv(client_connection, &utente, sizeof(Utente), 0);
-
-                    int totContatti = rubrica.totContatti;
-                    send(client_connection, &totContatti, sizeof(int), 0);
-
-                    Contatto newContatto;
-                    recv(client_connection, &newContatto, sizeof(Contatto), 0);
-                    printContatto(newContatto);
-                    addContatto(&rubrica, &newContatto);
-
+                    int conferma;
+                    recv(client_connection, &utente, sizeof(Utente), 0);
+                    puts("Dati ricevuti con successo");
+                    if(conferma = autorizza(&utenti, &utente)){
+                        puts("Autenticazione avvenuta con successo");
+                        //Esito positivo
+                        send(client_connection, "1", sizeof(int),0);
+                        send(client_connection, &rubrica.totContatti, sizeof(int),0);
+                        if(rubrica.totContatti < MAX_CONTATTO){
+                            Contatto newContatto;
+                            recv(client_connection, &newContatto, sizeof(Contatto), 0);
+                            printContatto(newContatto);
+                            addContatto(&rubrica, &newContatto);
+                            send(client_connection, "1", sizeof(int),0);
+                        }else{
+                            send(client_connection, "0", sizeof(int),0);
+                        }
+                    }else{
+                        puts("Autenticazione fallita, segnalo al client l'errore.");
+                        send(client_connection, "0", sizeof(int),0);
+                        puts("Errore recapitato con successo");
+                    }
                     memset(command, 0, sizeof(command));
                     break;
                 case 3:

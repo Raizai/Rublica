@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include "../rubrica/rubrica.h"
+#include "../utenti/utente.h"
 #define PORT 8080
 
 void receiveRubrica(int clientSocket, Rubrica *rubrica) {
@@ -97,24 +98,39 @@ int main(int argc, char const *argv[])
             printRubrica(&rubrica);
             break;
         case 2: 
-            Contatto nuovoContatto;
             write(client_fd, "2", 1);
 
-            int totContatti;
-            read(client_fd, &totContatti, sizeof(int));
-
-            if (totContatti < 100) {
-                puts("Nome: ");
-                scanf("%s", nuovoContatto.firstname);
-                puts("Cognome: ");
-                scanf("%s", nuovoContatto.lastname);
-
-                checkNumero(nuovoContatto.cell_number);
-                send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
-            } else {
-                printf("Rubrica piena, impossibile aggiungere nuovi contatti.\n");
+            Utente utente;
+            int conferma = 0;
+            puts("Autenticazione richiesta");
+            printf("Nome utente: ");
+            scanf("%s", utente.username);
+            printf("Parola segreta: ");
+            scanf("%s", utente.password);
+            send(client_fd, &utente, sizeof(Utente), 0);
+            
+            recv(client_fd, &conferma, sizeof(int),0);
+            if(conferma){
+                Contatto nuovoContatto;
+                int totContatti;
+                recv(client_fd, &totContatti, sizeof(int),0);
+                if (totContatti < MAX_CONTATTO) {
+                    puts("Nome: ");
+                    scanf("%s", nuovoContatto.firstname);
+                    puts("Cognome: ");
+                    scanf("%s", nuovoContatto.lastname);
+                    checkNumero(nuovoContatto.cell_number);
+                    send(client_fd, &nuovoContatto, sizeof(Contatto), 0);
+                }
+                recv(client_fd, &conferma, sizeof(int),0);
+                if(conferma){
+                    printf("Elemento inserito in rubrica correttamente.\n");
+                }else{
+                    printf("Operazione fallita, si prega di ritentare.\n");
+                }
+            }else{
+                printf("Operazione fallita, si prega di ritentare.\n");
             }
-
             break;
         case 3:
             char newName[50], newLastName[50], newPhoneNumber[50];
