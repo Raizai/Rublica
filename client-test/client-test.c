@@ -82,6 +82,7 @@ int main(int argc, char const *argv[])
 
     int choice;
     do {
+        puts("");
         puts("Scegliere l'opzione desiderata:");
         puts("1 : Visualizzare i contatti della rubrica");
         puts("2 : Aggiungere un nuovo contatto (Autenticazione richiesta)");
@@ -93,7 +94,7 @@ int main(int argc, char const *argv[])
         switch (choice) {
         case 1:
             write(client_fd, "1", 1);
-            printf("Richiesta inviata al server : %d\n",choice);
+
             read(client_fd, &rubrica, sizeof( Rubrica));
             printRubrica(&rubrica);
             break;
@@ -105,11 +106,12 @@ int main(int argc, char const *argv[])
             puts("Autenticazione richiesta");
             printf("Nome utente: ");
             scanf("%s", utente.username);
-            printf("Parola segreta: ");
+            printf("Password: ");
             scanf("%s", utente.password);
             send(client_fd, &utente, sizeof(Utente), 0);
             
             recv(client_fd, &conferma, sizeof(int),0);
+            printf("CONFERMA: %d\n", conferma);
             if(conferma){
                 Contatto nuovoContatto;
                 int totContatti;

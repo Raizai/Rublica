@@ -15,14 +15,6 @@
 #define PORT 8080
 #define MAX_N_CLIENT 2
 
-void debugWithMessageWithoutParameters(int mode, char *msg)
-{
-    if (mode == 0)
-    {
-        puts(msg);
-    }
-}
-
 void elimina_contatto(Rubrica *rubrica, int indice) {
     if (indice >= 0 && indice < rubrica->totContatti) {
         for (int i = indice; i < rubrica->totContatti - 1; i++) {
@@ -32,8 +24,11 @@ void elimina_contatto(Rubrica *rubrica, int indice) {
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+
+    int true = 1;
+    int false = 0;
+
     // INIZIALIZZO LA RUBRICA
     Rubrica rubrica;
     rubrica.totContatti = 0;
@@ -47,7 +42,6 @@ int main(int argc, char *argv[])
     Utenti utenti;
     utenti.totUtenti = 0;
     inizializza(&utenti);
-    //printUtenti(&utenti);
     // ISTANZIO VARIABILI
     int sockfd, client_connection, valread;
     socklen_t length;
@@ -57,8 +51,7 @@ int main(int argc, char *argv[])
     pid_t clientPID;
     // APRO SOCKET TCP
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
+    if (sockfd < 0){
         perror("ERRORE: il socket non si è instaurato\n");
     }
 
@@ -67,33 +60,27 @@ int main(int argc, char *argv[])
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(PORT);
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("ERRORE: collegamento non avvenuto correttamente!\n");
     }
 
     // MI METTO IN ASCOLTO
-    if (listen(sockfd, MAX_N_CLIENT) == 0)
-    {
+    if (listen(sockfd, MAX_N_CLIENT) == 0) {
         puts("In ascolto ...");
-    }
-    else
-    {
+    } else {
         perror("ERRORE: collegamento non avvenuto correttamente!\n");
         exit(1);
     }
 
-    while (1)
-    {
+    while (1) {
         length = sizeof(cli_addr);
         int client_connection = accept(sockfd, (struct sockaddr *)&cli_addr, &length);
-        if (client_connection < 0)
-        {
+        if (client_connection < 0) {
             exit(1);
         }
         printf("Connessione accettata dall'indirizzo: %s sulla porta :%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
-        if (clientPID = fork() == 0)
-        {
+        
+        if (clientPID = fork() == 0) {
             while (read(client_connection, &command, sizeof(command)) > 0)
             {
                 switch (atoi(command))
@@ -109,24 +96,27 @@ int main(int argc, char *argv[])
                     int conferma;
                     recv(client_connection, &utente, sizeof(Utente), 0);
                     puts("Dati ricevuti con successo");
-                    if(conferma = autorizza(&utenti, &utente)){
+                    if(conferma = autorizza(&utenti, &utente)) {
                         puts("Autenticazione avvenuta con successo");
                         //Esito positivo
-                        send(client_connection, "1", sizeof(int),0);
+                        printf("SIZEOF: %ld\n", sizeof(true));
+                        send(client_connection, &true, sizeof(true),0);
                         send(client_connection, &rubrica.totContatti, sizeof(int),0);
                         if(rubrica.totContatti < MAX_CONTATTO){
                             Contatto newContatto;
                             recv(client_connection, &newContatto, sizeof(Contatto), 0);
                             printContatto(newContatto);
                             addContatto(&rubrica, &newContatto);
-                            send(client_connection, "1", sizeof(int),0);
+                            printf("SIZEOF: %ld\n", sizeof(true));
+                            send(client_connection, &true, sizeof(true),0);
                         }else{
-                            send(client_connection, "0", sizeof(int),0);
+                            printf("SIZEOF: %ld\n", sizeof(int));
+                            send(client_connection, &false, sizeof(false),0);
                         }
                     }else{
                         puts("Autenticazione fallita, segnalo al client l'errore.");
-                        send(client_connection, "0", sizeof(int),0);
-                        puts("Errore recapitato con successo");
+                        printf("SIZEOF: %ld\n", sizeof(int));
+                        send(client_connection, &false, sizeof(int),0);
                     }
                     memset(command, 0, sizeof(command));
                     break;
@@ -144,9 +134,6 @@ int main(int argc, char *argv[])
                     printf("newLastName: %s\n", newLastName);
 
                     indice = getContatto(&rubrica, newName, newLastName);
-                    // printf("QUINDI: %s",contatto_modificato );
-
-                    // printf("Nome: %s - Cognome: %s\n", contatto_modificato->firstname, contatto_modificato->lastname);
 
                     if (indice != -1)
                     {
@@ -168,12 +155,12 @@ int main(int argc, char *argv[])
                         printf("Numero di telefono: %s\n", rubrica.contatti[indice].cell_number);
                         printf("\n");
                     }
-                    else
-                    {
+                    else {
                         // Se il contatto non viene trovato, invia un messaggio di errore al client
                         char errore[] = "Contatto non trovato";
                         send(client_connection, errore, sizeof(char), 0);
                     }
+                    memset(command, 0, sizeof(command));
                     break;
                 case 4:
                     char nome_elim[50], cognome_elim[50];
@@ -182,10 +169,10 @@ int main(int argc, char *argv[])
                     memset(cognome_elim, 0, sizeof(cognome_elim));
 
                     read(client_connection, nome_elim, sizeof(nome_elim));
-                    nome_elim[strcspn(nome_elim, "\n")] = '\0';       // Rimuove il carattere newline
+                    nome_elim[strcspn(nome_elim, "\n")] = '\0';
 
                     read(client_connection, cognome_elim, sizeof(cognome_elim));
-                    cognome_elim[strcspn(cognome_elim, "\n")] = '\0'; // Rimuove il carattere newline
+                    cognome_elim[strcspn(cognome_elim, "\n")] = '\0';
 
                     printf("Richiesta di eliminazione per il contatto: %s %s\n", nome_elim, cognome_elim);
 
@@ -204,6 +191,7 @@ int main(int argc, char *argv[])
                         char conferma[] = "Contatto non trovato.";
                         send(client_connection, conferma, strlen(conferma), 0);
                     }
+                    memset(command, 0, sizeof(command));
                     break;
                 case 9:
                     printf("In attesa di input da ... %s:%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
@@ -212,5 +200,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+
     return 0;
 }

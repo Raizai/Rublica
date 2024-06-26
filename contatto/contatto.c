@@ -9,8 +9,8 @@ Contatto setContatto(char* lastname, char* firstname, char* cell_number) {
 }
 
 void printContatto(Contatto contatto) {
-    printf("Contatto:\n");
     printf("Name: %s\n", contatto.firstname);
     printf("Cognome: %s\n", contatto.lastname);
     printf("Number: %s\n", contatto.cell_number);
+    puts("-----------------");
 }
