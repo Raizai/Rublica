@@ -48,6 +48,21 @@ void checkNumero(char *number) {
     } while (!isNumero(number));
 }
 
+int inoltroCredenziali(int client_fd){
+    Utente utente;
+    int conferma = 0;
+    puts("Autenticazione richiesta");
+    printf("Nome utente: ");
+    scanf("%s", utente.username);
+    printf("Password: ");
+    scanf("%s", utente.password);
+    send(client_fd, &utente, sizeof(Utente), 0);
+    
+    recv(client_fd, &conferma, sizeof(int),0);
+    printf("CONFERMA: %d\n", conferma);
+    return conferma;
+}
+
 int main(int argc, char const *argv[])
 {
     int status, client_fd, response;
@@ -55,6 +70,7 @@ int main(int argc, char const *argv[])
     char buffer[1024] = {0};
     int num_contact;
     Rubrica rubrica;
+    int conferma;
 
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("ERRORE: Creazione socket fallita");
@@ -78,7 +94,7 @@ int main(int argc, char const *argv[])
         sleep(3);
     }
 
-    puts("\nBenvenuto nella Rubrica Condivisa");
+    puts("\nBenvenuto nella sua Rubrica Online");
 
     int choice;
     do {
@@ -94,24 +110,12 @@ int main(int argc, char const *argv[])
         switch (choice) {
         case 1:
             write(client_fd, "1", 1);
-
-            read(client_fd, &rubrica, sizeof( Rubrica));
+            recv(client_fd, &rubrica, sizeof( Rubrica),0);
             printRubrica(&rubrica);
             break;
         case 2: 
             write(client_fd, "2", 1);
-
-            Utente utente;
-            int conferma = 0;
-            puts("Autenticazione richiesta");
-            printf("Nome utente: ");
-            scanf("%s", utente.username);
-            printf("Password: ");
-            scanf("%s", utente.password);
-            send(client_fd, &utente, sizeof(Utente), 0);
-            
-            recv(client_fd, &conferma, sizeof(int),0);
-            printf("CONFERMA: %d\n", conferma);
+            conferma = inoltroCredenziali(client_fd);
             if(conferma){
                 Contatto nuovoContatto;
                 int totContatti;
@@ -131,63 +135,61 @@ int main(int argc, char const *argv[])
                     printf("Operazione fallita, si prega di ritentare.\n");
                 }
             }else{
-                printf("Operazione fallita, si prega di ritentare.\n");
+                printf("Autenticazione fallita, si prega di ritentare.\n");
             }
             break;
         case 3:
-            char newName[50], newLastName[50], newPhoneNumber[50];
-            Contatto contatto_modificato;
-
             write(client_fd, "3", 1);
-
-            puts("Enter the Name:");
-            scanf("%s", newName);
-            send(client_fd, newName, strlen(newName), 0);
-
-            puts("Enter the Last Name:");
-            scanf("%s", newLastName);
-            send(client_fd, newLastName, strlen(newLastName), 0);
-
-            read(client_fd, &response, sizeof(int));
-
-            if (response == 1) {
-
-                do {
-                printf("Inserisci il nuovo numero di telefono per il contatto: ");
-                scanf("%s", contatto_modificato.cell_number);
-
-                    if (!isNumero(contatto_modificato.cell_number)) {
-                        printf("Numero non valido. Inserisci di nuovo il numero\n");
-                    }
-                } while (!isNumero(contatto_modificato.cell_number));
-                
-                printf("NUMERO NUOVO: %s\n", contatto_modificato.cell_number);
-                // Invia il nuovo numero al server
-                send(client_fd, contatto_modificato.cell_number, strlen(contatto_modificato.cell_number), 0);
-                printf("Numero modificato inviato al server.\n");
-            } else {
-                printf("Contatto non esiste nella Rubrica.\n");
+            conferma = inoltroCredenziali(client_fd);
+            if(conferma){
+                char newName[50], newLastName[50], newPhoneNumber[50];
+                Contatto contatto_modificato;
+                puts("Inserisci il nome:");
+                scanf("%s", newName);
+                send(client_fd, newName, strlen(newName), 0);
+                puts("Inserisci il cognome:");
+                scanf("%s", newLastName);
+                send(client_fd, newLastName, strlen(newLastName), 0);
+                recv(client_fd, &response, sizeof(int),0);
+                if (response == 1) {
+                    do {
+                    printf("Inserisci il nuovo numero di telefono per il contatto: ");
+                    scanf("%s", contatto_modificato.cell_number);
+                        if (!isNumero(contatto_modificato.cell_number)) {
+                            printf("Numero non valido. Inserisci di nuovo il numero\n");
+                        }
+                    } while (!isNumero(contatto_modificato.cell_number));
+                    // Invia il nuovo numero al server
+                    send(client_fd, contatto_modificato.cell_number, strlen(contatto_modificato.cell_number), 0);
+                    printf("Numero modificato inviato al server.\n");
+                } else {
+                    printf("Contatto non esiste nella Rubrica.\n");
+                }
+            }else{
+                printf("Autenticazione fallita, si prega di ritentare.\n");
             }
-
             break;
         case 4:
-            char nome_elim[50], cognome_elim[50];
+            write(client_fd, "4", 1);
+            conferma = inoltroCredenziali(client_fd);
+            if(conferma){
+                char nome_elim[50], cognome_elim[50]; 
+                send(client_fd, buffer, strlen(buffer), 0);
 
-            write(client_fd, "4", 1); 
-            send(client_fd, buffer, strlen(buffer), 0);
+                printf("Inserisci il nome del contatto da eliminare: ");
+                scanf("%s", nome_elim);
+                send(client_fd, nome_elim, strlen(nome_elim), 0);
 
-            printf("Inserisci il nome del contatto da eliminare: ");
-            scanf("%s", nome_elim);
-            send(client_fd, nome_elim, strlen(nome_elim), 0);
+                printf("Inserisci il cognome del contatto da eliminare: ");
+                scanf("%s", cognome_elim);
+                send(client_fd, cognome_elim, strlen(cognome_elim), 0);
 
-            printf("Inserisci il cognome del contatto da eliminare: ");
-            scanf("%s", cognome_elim);
-            send(client_fd, cognome_elim, strlen(cognome_elim), 0);
-
-            char response[1024] = {0};
-            read(client_fd, response, 1024);
-            printf("%s\n", response);
-            
+                char response[1024] = {0};
+                recv(client_fd, response, 1024, 0);
+                printf("%s\n", response);
+            }else{
+                printf("Autenticazione fallita, si prega di ritentare.\n");
+            }
             break;
         case 9:
             break;

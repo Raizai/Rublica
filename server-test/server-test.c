@@ -41,6 +41,9 @@ int main(int argc, char *argv[]) {
     // INIZIALIZZO UTENTI
     Utenti utenti;
     utenti.totUtenti = 0;
+    //ISTANZIO VAR. PER L'AUTENTICAZIONE
+    Utente utente;
+    int conferma;
     inizializza(&utenti);
     // ISTANZIO VARIABILI
     int sockfd, client_connection, valread;
@@ -81,7 +84,7 @@ int main(int argc, char *argv[]) {
         printf("Connessione accettata dall'indirizzo: %s sulla porta :%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
         
         if (clientPID = fork() == 0) {
-            while (read(client_connection, &command, sizeof(command)) > 0)
+            while (recv(client_connection, &command, sizeof(command),0) > 0)
             {
                 switch (atoi(command))
                 {
@@ -92,14 +95,13 @@ int main(int argc, char *argv[]) {
                 case 2:
                     puts("Scelta effettuata dall'utente : 2");
                     puts("In attesa di autenticazione ...");
-                    Utente utente;
-                    int conferma;
+                    memset(utente.username,0,sizeof(utente.username));
+                    memset(utente.password,0,sizeof(utente.password));
                     recv(client_connection, &utente, sizeof(Utente), 0);
                     puts("Dati ricevuti con successo");
                     if(conferma = autorizza(&utenti, &utente)) {
                         puts("Autenticazione avvenuta con successo");
                         //Esito positivo
-                        printf("SIZEOF: %ld\n", sizeof(true));
                         send(client_connection, &true, sizeof(true),0);
                         send(client_connection, &rubrica.totContatti, sizeof(int),0);
                         if(rubrica.totContatti < MAX_CONTATTO){
@@ -115,81 +117,101 @@ int main(int argc, char *argv[]) {
                         }
                     }else{
                         puts("Autenticazione fallita, segnalo al client l'errore.");
-                        printf("SIZEOF: %ld\n", sizeof(int));
                         send(client_connection, &false, sizeof(int),0);
                     }
                     memset(command, 0, sizeof(command));
                     break;
                 case 3:
-                    char newName[50], newLastName[50], newNumber[50];
-                    Contatto *contatto_modificato;
-                    int indice;
-                    valread = read(client_connection, newName, 50);
-                    newName[valread] = '\0';
-                    printf("VALREAD: %d\n", valread);
-                    printf("newName: %s\n", newName);
-                    valread = read(client_connection, newLastName, 50);
-                    newLastName[valread] = '\0';
-                    printf("VALREAD: %d\n", valread);
-                    printf("newLastName: %s\n", newLastName);
+                    puts("Scelta effettuata dall'utente : 3");
+                    puts("In attesa di autenticazione ...");
+                    memset(utente.username,0,sizeof(utente.username));
+                    memset(utente.password,0,sizeof(utente.password));
+                    recv(client_connection, &utente, sizeof(Utente), 0);
+                    puts("Dati ricevuti con successo");
+                    if(conferma = autorizza(&utenti, &utente)) {
+                        puts("Autenticazione avvenuta con successo");
+                        //Esito positivo
+                        send(client_connection, &true, sizeof(true),0);
+                        char newName[50], newLastName[50], newNumber[50];
+                        Contatto *contatto_modificato;
+                        int indice;
+                        valread = recv(client_connection, newName, 50,0);
+                        newName[valread] = '\0';
+                        valread = recv(client_connection, newLastName, 50,0);
+                        newLastName[valread] = '\0';
+                        indice = getContatto(&rubrica, newName, newLastName);
 
-                    indice = getContatto(&rubrica, newName, newLastName);
+                        if (indice != -1)
+                        {
+                            // Invia al client un messaggio di conferma
+                            int conferma3 = 1;
+                            send(client_connection, &conferma3, sizeof(int), 0);
 
-                    if (indice != -1)
-                    {
-                        // Invia al client un messaggio di conferma
-                        int conferma = 1;
-                        send(client_connection, &conferma, sizeof(int), 0);
+                            memset(newNumber, 0, sizeof(newNumber));
+                            // Ricevi il nuovo numero di telefono dal client
+                            recv(client_connection, newNumber, sizeof(newNumber),0);
+                            newNumber[strcspn(newNumber, "\n")] = 0; // Aggiunge terminatore di stringa
 
-                        memset(newNumber, 0, sizeof(newNumber));
-                        // Ricevi il nuovo numero di telefono dal client
-                        read(client_connection, newNumber, sizeof(newNumber));
-                        newNumber[strcspn(newNumber, "\n")] = 0; // Aggiunge terminatore di stringa
-
-                        strcpy(rubrica.contatti[indice].cell_number, newNumber);
-                        printf("Numero di telefono del contatto modificato.\n");
-
-                        printf("Contatto modificato:\n");
-                        printf("Nome: %s\n", rubrica.contatti[indice].firstname);
-                        printf("Cognome: %s\n", rubrica.contatti[indice].lastname);
-                        printf("Numero di telefono: %s\n", rubrica.contatti[indice].cell_number);
-                        printf("\n");
-                    }
-                    else {
-                        // Se il contatto non viene trovato, invia un messaggio di errore al client
-                        char errore[] = "Contatto non trovato";
-                        send(client_connection, errore, sizeof(char), 0);
+                            strcpy(rubrica.contatti[indice].cell_number, newNumber);
+                            printf("Numero di telefono del contatto modificato.\n");
+                            printf("Contatto modificato:\n");
+                            printf("Nome: %s\n", rubrica.contatti[indice].firstname);
+                            printf("Cognome: %s\n", rubrica.contatti[indice].lastname);
+                            printf("Numero di telefono: %s\n", rubrica.contatti[indice].cell_number);
+                            printf("\n");
+                        }else {
+                            // Se il contatto non viene trovato, invia un messaggio di errore al client
+                            char errore[] = "Contatto non trovato";
+                            send(client_connection, errore, sizeof(char), 0);
+                        }
+                    }else{
+                        puts("Autenticazione fallita, segnalo al client l'errore.");
+                        send(client_connection, &false, sizeof(int),0);
                     }
                     memset(command, 0, sizeof(command));
                     break;
                 case 4:
-                    char nome_elim[50], cognome_elim[50];
-                    int index;
-                    memset(nome_elim, 0, sizeof(nome_elim));
-                    memset(cognome_elim, 0, sizeof(cognome_elim));
+                    puts("Scelta effettuata dall'utente : 3");
+                    puts("In attesa di autenticazione ...");
+                    memset(utente.username,0,sizeof(utente.username));
+                    memset(utente.password,0,sizeof(utente.password));
+                    recv(client_connection, &utente, sizeof(Utente), 0);
+                    puts("Dati ricevuti con successo");
+                    if(conferma = autorizza(&utenti, &utente)) {
+                        puts("Autenticazione avvenuta con successo");
+                        //Esito positivo
+                        send(client_connection, &true, sizeof(true),0);
+                        char nome_elim[50], cognome_elim[50];
+                        int index;
+                        memset(nome_elim, 0, sizeof(nome_elim));
+                        memset(cognome_elim, 0, sizeof(cognome_elim));
 
-                    read(client_connection, nome_elim, sizeof(nome_elim));
-                    nome_elim[strcspn(nome_elim, "\n")] = '\0';
+                        recv(client_connection, nome_elim, sizeof(nome_elim),0);
+                        nome_elim[strcspn(nome_elim, "\n")] = '\0';
 
-                    read(client_connection, cognome_elim, sizeof(cognome_elim));
-                    cognome_elim[strcspn(cognome_elim, "\n")] = '\0';
+                        recv(client_connection, cognome_elim, sizeof(cognome_elim),0);
+                        cognome_elim[strcspn(cognome_elim, "\n")] = '\0';
 
-                    printf("Richiesta di eliminazione per il contatto: %s %s\n", nome_elim, cognome_elim);
+                        printf("Richiesta di eliminazione per il contatto: %s %s\n", nome_elim, cognome_elim);
 
-                    index = getContatto(&rubrica, nome_elim, cognome_elim);
+                        index = getContatto(&rubrica, nome_elim, cognome_elim);
 
-                    if (index != -1) {
-                        // Contatto trovato, elimina il contatto
-                        elimina_contatto(&rubrica, indice);
-                        printf("Contatto eliminato: %s %s\n", nome_elim, cognome_elim);
+                        if (index != -1) {
+                            // Contatto trovato, elimina il contatto
+                            elimina_contatto(&rubrica, index);
+                            printf("Contatto eliminato: %s %s\n", nome_elim, cognome_elim);
 
-                        // Invia conferma al client
-                        char conferma[] = "Contatto eliminato con successo.";
-                        send(client_connection, conferma, strlen(conferma), 0);
-                    } else {
-                        // Contatto non trovato
-                        char conferma[] = "Contatto non trovato.";
-                        send(client_connection, conferma, strlen(conferma), 0);
+                            // Invia conferma al client
+                            char conferma[] = "Contatto eliminato con successo.";
+                            send(client_connection, conferma, strlen(conferma), 0);
+                        } else {
+                            // Contatto non trovato
+                            char conferma[] = "Contatto non trovato.";
+                            send(client_connection, conferma, strlen(conferma), 0);
+                        }
+                    }else{
+                        puts("Autenticazione fallita, segnalo al client l'errore.");
+                        send(client_connection, &false, sizeof(int),0);
                     }
                     memset(command, 0, sizeof(command));
                     break;
@@ -200,7 +222,5 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-
-
     return 0;
 }
