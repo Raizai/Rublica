@@ -5,10 +5,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include  <sys/wait.h>
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
+
 #include "../rubrica/rubrica.h"
 #include "../utenti/utenti.h"
 
@@ -26,32 +28,35 @@ void elimina_contatto(Rubrica *rubrica, int indice) {
 
 int main(int argc, char *argv[]) {
 
-    int true = 1;
-    int false = 0;
+
 
     // INIZIALIZZO LA RUBRICA
     Rubrica rubrica;
     rubrica.totContatti = 0;
     Contatto rossi = setContatto("Rossi", "Luigi", "3335670098");
-    Contatto sainz = setContatto("Sainz", "Luca", "3389234123");
-    Contatto estathe = setContatto("Estathe", "Leila", "3382987105");
+    Contatto bianchi = setContatto("Bianchi", "Giovanni", "3389234123");
+    Contatto laura = setContatto("Verdi", "Laura", "3382987105");
+    Contatto elena = setContatto("Treste", "Elena", "3382987105");
     addContatto(&rubrica, &rossi);
-    addContatto(&rubrica, &sainz);
-    addContatto(&rubrica, &estathe);
+    addContatto(&rubrica, &bianchi);
+    addContatto(&rubrica, &laura);
+    addContatto(&rubrica, &elena);
     // INIZIALIZZO UTENTI
     Utenti utenti;
     utenti.totUtenti = 0;
     //ISTANZIO VAR. PER L'AUTENTICAZIONE
     Utente utente;
-    int conferma;
+    int conferma, child_status;
     inizializza(&utenti);
     // ISTANZIO VARIABILI
     int sockfd, client_connection, valread;
     socklen_t length;
     struct sockaddr_in serv_addr, cli_addr;
-    char buffer[1024];
-    char command[10] = {0};
     pid_t clientPID;
+
+    char command[10] = {0};
+    int true = 1, false = 0;
+    
     // APRO SOCKET TCP
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0){
@@ -64,7 +69,9 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(PORT);
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        perror("ERRORE: collegamento non avvenuto correttamente!\n");
+        perror("ERRORE: collegamento non avvenuto correttamente!\n");        
+        close(sockfd);
+        exit(1);
     }
 
     // MI METTO IN ASCOLTO
@@ -72,6 +79,7 @@ int main(int argc, char *argv[]) {
         puts("In ascolto ...");
     } else {
         perror("ERRORE: collegamento non avvenuto correttamente!\n");
+         close(sockfd);
         exit(1);
     }
 
@@ -82,13 +90,19 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
         printf("Connessione accettata dall'indirizzo: %s sulla porta :%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
-        
-        if (clientPID = fork() == 0) {
+        clientPID = fork() == 0;
+        if (clientPID < 0) {
+            perror("fork failed");
+            exit(EXIT_FAILURE);
+        }
+        if (clientPID == 0) {
+            
             while (recv(client_connection, &command, sizeof(command),0) > 0)
             {
                 switch (atoi(command))
                 {
                 case 1:
+                    puts("Scelta effettuata dall'utente : 1");
                     send(client_connection, &rubrica, sizeof(Rubrica), 0);
                     memset(command, 0, sizeof(command));
                     break;
@@ -109,10 +123,8 @@ int main(int argc, char *argv[]) {
                             recv(client_connection, &newContatto, sizeof(Contatto), 0);
                             printContatto(newContatto);
                             addContatto(&rubrica, &newContatto);
-                            printf("SIZEOF: %ld\n", sizeof(true));
                             send(client_connection, &true, sizeof(true),0);
                         }else{
-                            printf("SIZEOF: %ld\n", sizeof(int));
                             send(client_connection, &false, sizeof(false),0);
                         }
                     }else{
@@ -171,7 +183,7 @@ int main(int argc, char *argv[]) {
                     memset(command, 0, sizeof(command));
                     break;
                 case 4:
-                    puts("Scelta effettuata dall'utente : 3");
+                    puts("Scelta effettuata dall'utente : 4");
                     puts("In attesa di autenticazione ...");
                     memset(utente.username,0,sizeof(utente.username));
                     memset(utente.password,0,sizeof(utente.password));
@@ -216,11 +228,18 @@ int main(int argc, char *argv[]) {
                     memset(command, 0, sizeof(command));
                     break;
                 case 9:
-                    printf("In attesa di input da ... %s:%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
+                    puts("Disconnessione richiesta dal client.");
+                    close(client_connection);
+                    memset(command, 0, sizeof(command));
                     break;
                 }
+                
             }
+        } else {
+            waitpid(clientPID, NULL, 0);
+            close(client_connection); 
         }
     }
+    close(sockfd);
     return 0;
 }

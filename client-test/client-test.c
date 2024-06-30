@@ -110,6 +110,7 @@ int main(int argc, char const *argv[])
         switch (choice) {
         case 1:
             write(client_fd, "1", 1);
+            puts("");
             recv(client_fd, &rubrica, sizeof( Rubrica),0);
             printRubrica(&rubrica);
             break;
@@ -192,6 +193,8 @@ int main(int argc, char const *argv[])
             }
             break;
         case 9:
+            write(client_fd, "9", 1);
+            close(client_fd);
             break;
         default:
             printf("Operazione non consentita");
@@ -199,7 +202,7 @@ int main(int argc, char const *argv[])
     } while (choice != 9);
 
     // closing the connected socket
-    printf("Grazie per aver utilizzato il nostro servizio!");
-    close(client_fd);
+    printf("Grazie per aver utilizzato il nostro servizio!\n");
+
     return 0;
 }
