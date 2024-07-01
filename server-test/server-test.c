@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0){
         perror("ERRORE: il socket non si è instaurato\n");
+        exit(1);
     }
 
     // DEFINISCO L'INDIRIZZO DA ASSEGNARE AL SOCKET
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
         puts("In ascolto ...");
     } else {
         perror("ERRORE: collegamento non avvenuto correttamente!\n");
-         close(sockfd);
+        close(sockfd);
         exit(1);
     }
 
@@ -87,7 +88,8 @@ int main(int argc, char *argv[]) {
         length = sizeof(cli_addr);
         int client_connection = accept(sockfd, (struct sockaddr *)&cli_addr, &length);
         if (client_connection < 0) {
-            exit(1);
+            perror("ERRORE: Connessione non accettata");
+            continue;
         }
         printf("Connessione accettata dall'indirizzo: %s sulla porta :%d\n", inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
         clientPID = fork() == 0;
@@ -125,6 +127,7 @@ int main(int argc, char *argv[]) {
                             addContatto(&rubrica, &newContatto);
                             send(client_connection, &true, sizeof(true),0);
                         }else{
+                            puts("La Rubrica è piena.");
                             send(client_connection, &false, sizeof(false),0);
                         }
                     }else{

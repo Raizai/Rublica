@@ -65,7 +65,7 @@ int inoltroCredenziali(int client_fd){
 
 int main(int argc, char const *argv[])
 {
-    int status, client_fd, response;
+    int client_fd, response;
     struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
     int num_contact;
@@ -133,10 +133,11 @@ int main(int argc, char const *argv[])
                 if(conferma){
                     printf("Elemento inserito in rubrica correttamente.\n");
                 }else{
+                    puts("La tua Rubrica è piena,non è possibile aggiungere altri contatti.");
                     printf("Operazione fallita, si prega di ritentare.\n");
                 }
             }else{
-                printf("Autenticazione fallita, si prega di ritentare.\n");
+                printf("Autenticazione fallita, la tua Rubrica è piena,non è possibile aggiungere altri contatti.\n");
             }
             break;
         case 3:
