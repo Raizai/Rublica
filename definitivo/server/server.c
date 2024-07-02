@@ -26,27 +26,18 @@ void elimina_contatto(Rubrica *rubrica, int indice) {
     }
 }
 
-int main(int argc, char *argv[]) {
-
-
+int main() {
 
     // INIZIALIZZO LA RUBRICA
     Rubrica rubrica;
     rubrica.totContatti = 0;
-    Contatto rossi = setContatto("Rossi", "Luigi", "3335670098");
-    Contatto bianchi = setContatto("Bianchi", "Giovanni", "3389234123");
-    Contatto laura = setContatto("Verdi", "Laura", "3382987105");
-    Contatto elena = setContatto("Treste", "Elena", "3382987105");
-    addContatto(&rubrica, &rossi);
-    addContatto(&rubrica, &bianchi);
-    addContatto(&rubrica, &laura);
-    addContatto(&rubrica, &elena);
+
     // INIZIALIZZO UTENTI
     Utenti utenti;
     utenti.totUtenti = 0;
     //ISTANZIO VAR. PER L'AUTENTICAZIONE
     Utente utente;
-    int conferma, child_status;
+    int conferma;
     inizializza(&utenti);
     // ISTANZIO VARIABILI
     int sockfd, client_connection, valread;
@@ -86,7 +77,7 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         length = sizeof(cli_addr);
-        int client_connection = accept(sockfd, (struct sockaddr *)&cli_addr, &length);
+        client_connection = accept(sockfd, (struct sockaddr *)&cli_addr, &length);
         if (client_connection < 0) {
             perror("ERRORE: Connessione non accettata");
             continue;
@@ -115,7 +106,7 @@ int main(int argc, char *argv[]) {
                     memset(utente.password,0,sizeof(utente.password));
                     recv(client_connection, &utente, sizeof(Utente), 0);
                     puts("Dati ricevuti con successo");
-                    if(conferma = autorizza(&utenti, &utente)) {
+                    if((conferma = autorizza(&utenti, &utente))) {
                         puts("Autenticazione avvenuta con successo");
                         //Esito positivo
                         send(client_connection, &true, sizeof(true),0);
@@ -143,12 +134,11 @@ int main(int argc, char *argv[]) {
                     memset(utente.password,0,sizeof(utente.password));
                     recv(client_connection, &utente, sizeof(Utente), 0);
                     puts("Dati ricevuti con successo");
-                    if(conferma = autorizza(&utenti, &utente)) {
+                    if((conferma = autorizza(&utenti, &utente))) {
                         puts("Autenticazione avvenuta con successo");
                         //Esito positivo
                         send(client_connection, &true, sizeof(true),0);
                         char newName[50], newLastName[50], newNumber[50];
-                        Contatto *contatto_modificato;
                         int indice;
                         valread = recv(client_connection, newName, 50,0);
                         newName[valread] = '\0';
@@ -192,7 +182,7 @@ int main(int argc, char *argv[]) {
                     memset(utente.password,0,sizeof(utente.password));
                     recv(client_connection, &utente, sizeof(Utente), 0);
                     puts("Dati ricevuti con successo");
-                    if(conferma = autorizza(&utenti, &utente)) {
+                    if((conferma = autorizza(&utenti, &utente))) {
                         puts("Autenticazione avvenuta con successo");
                         //Esito positivo
                         send(client_connection, &true, sizeof(true),0);

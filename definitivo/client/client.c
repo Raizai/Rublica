@@ -63,12 +63,11 @@ int inoltroCredenziali(int client_fd){
     return conferma;
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
     int client_fd, response;
     struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
-    int num_contact;
     Rubrica rubrica;
     int conferma;
 
@@ -144,7 +143,7 @@ int main(int argc, char const *argv[])
             write(client_fd, "3", 1);
             conferma = inoltroCredenziali(client_fd);
             if(conferma){
-                char newName[50], newLastName[50], newPhoneNumber[50];
+                char newName[50], newLastName[50];
                 Contatto contatto_modificato;
                 puts("Inserisci il nome:");
                 scanf("%s", newName);

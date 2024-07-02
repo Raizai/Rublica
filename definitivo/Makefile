@@ -10,7 +10,7 @@ $(OUTPUT_DIR)/%: %.c ./utenti/utenti.c ./contatto/contatto.c ./rubrica/rubrica.c
 	gcc -o $@ $^
 
 clean:
-	rm -rf server
-	rm -rf client
+	rm -rf ./server/server
+	rm -rf ./client/client
 	
 .PHONY: all clean
